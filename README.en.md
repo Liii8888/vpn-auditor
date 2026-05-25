@@ -2,47 +2,57 @@
 
 [中文](README.md)
 
-**Connect the tunnel. Run the skill. Read the verdict.**
+> Once the tunnel is on, it asks the network itself.
 
-`vpn-auditor` is a zero-interaction Codex skill for VPN/proxy checks. It only runs checks it can prove automatically, without asking you to disconnect the VPN, explain the client, wait for peak hours, or manually open websites.
+`vpn-auditor` is a zero-interaction Codex skill for VPN/proxy checks. Connect the line, run the skill, and read a direct Chinese verdict. It will not ask you to disconnect the VPN, explain the client, wait for peak hours, or manually open a row of websites.
 
 ```text
 结论：87/100。好，日常很稳，未命中一票否决。
 ```
 
-| 01 | 02 | 03 |
+```text
+VPN ON
+  -> exit probes
+  -> DNS / IPv6 / path checks
+  -> public target reachability
+  -> score, evidence, impact factors
+```
+
+## One Run
+
+| You do | It does | You read |
 | --- | --- | --- |
-| Connect VPN / proxy | Invoke `$vpn-auditor` | Read the score, evidence, and impact factors |
+| Connect VPN / proxy | Probes exit, DNS, IPv6, path, and reachability | Score, verdict, one-vote veto |
+| Do not switch networks | Avoids disruptive tests | Automatic evidence |
+| Do not explain the client | Avoids subjective review | Impact factors and uncovered items |
 
-## Report Structure
+## Report Shape
 
-| Section | Purpose |
+| Block | How to read it |
 | --- | --- |
-| Conclusion | Final score, verdict, and one-vote veto status |
-| Assessment Summary | Summarizes categories as strong, stable, limited, or weak |
-| Evidence | Exit IP, DNS path, tunnel/proxy state, and target reachability |
-| Impact Factors | Explains what pulled the result down without exposing scoring weights |
-| Uncovered Items | Lists checks skipped because they require human action or disruptive testing |
+| Conclusion | Start here. It tells you whether this can be a main line. |
+| Assessment Summary | Scans each area as strong, stable, limited, or weak. |
+| Evidence | Shows exit IP, DNS, IPv6, tunnel interfaces, and target reachability. |
+| Impact Factors | Explains what pulled the result down without exposing scoring weights. |
+| Uncovered Items | Lists checks skipped because they need human action or disruptive testing. |
 
-## Automatic Check Surface
+## What It Asks The Network
 
-| Network Identity | Resolution Path | Connection Quality |
+| Identity | Path | Experience |
 | --- | --- | --- |
 | Public exit IP | Default DNS / scoped DNS | Public target reachability |
-| Multi-probe consistency | IPv6 path evidence | Small-sample network response |
-| macOS tunnel / system proxy | Local-network DNS signals | Repeated-request stability |
+| Multi-probe consistency | IPv6 evidence | Small-sample response |
+| Local tunnel / system proxy | Local-network DNS signals | Repeated-request stability |
 
-## Boundaries
+## What It Will Not Make You Do
 
-The v1 rule is simple: test what can be proven automatically, and do not make the user part of the test rig.
-
-| Skipped | Reason |
+| Skipped | Why |
 | --- | --- |
-| Kill switch / forced disconnect | It disrupts the current network state |
-| Client provenance review | It requires human judgment or extra permissions |
-| Certificates, profiles, kernel extensions, MDM | They do not fit a zero-interaction run |
-| Provider business-model judgment | It cannot be proven by one network check |
-| Long-term peak-hour stability | It requires multi-session monitoring |
+| Kill switch / forced disconnect | It disrupts the current network |
+| Client provenance review | It needs human judgment or extra permissions |
+| Certificates, profiles, kernel extensions, MDM | They do not fit zero-interaction checks |
+| Provider business-model judgment | One network probe cannot prove it |
+| Long-term peak-hour stability | It needs multi-session monitoring |
 | Bank, campus, login-only sites | They can trigger risk controls or touch private data |
 
 ## Install
@@ -68,9 +78,16 @@ Offline validation:
 python3 "$HOME/.codex/skills/vpn-auditor/scripts/vpn_auditor.py" --self-test
 ```
 
-## Output Philosophy
+## Design Rules
 
-The report shows the final score, verdict, and evidence, but it does not print the detailed weighting table. That keeps the report readable and harder to game. The project is still auditable: the implementation lives in `scripts/vpn_auditor.py`.
+- Test only what can be proven automatically.
+- Do not turn the user into the test operator.
+- Do not print the detailed weighting table; show verdict, evidence, and impact factors.
+- Keep the algorithm auditable in `scripts/vpn_auditor.py`.
+
+## Rollback
+
+The pre-redesign README state is tagged as `rollback/readme-swiss-20260525`. See [ROLLBACK.md](ROLLBACK.md) if you need to restore it.
 
 ## License
 
