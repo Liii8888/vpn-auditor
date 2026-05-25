@@ -1,70 +1,72 @@
 # vpn-auditor
 
-Connect the tunnel. Run the skill. Read the verdict.
+[English](README.en.md)
 
-`vpn-auditor` is a Codex skill for automatic VPN/proxy checks. It does not ask you to disconnect the VPN, inspect the client, wait for peak hours, or explain what you installed. It runs the checks it can prove by itself, then returns a concise Chinese report.
+连好代理。运行 skill。等结果。
+
+`vpn-auditor` 是一个 Codex skill，用来自动体检 VPN / 代理 / 梯子。它不会让你手动断开 VPN、切换网络、解释客户端来源、等晚高峰，或者去打开一堆网站确认。它只做能自动证明的检查，然后给出一份简洁的中文报告。
 
 ```text
 结论：87/100。好，日常很稳，未命中一票否决。
 ```
 
-## What You Get
+## 你会看到什么
 
-| Section | What it tells you |
+| 模块 | 说明 |
 | --- | --- |
-| Conclusion | Final score, verdict, and one-vote veto status |
-| Evidence | Exit IP, DNS path, tunnel/proxy state, target reachability |
-| Impact Factors | Why the result was pulled down, without exposing the scoring weights |
-| Uncovered Items | Checks skipped because they require human action or disruptive testing |
+| 结论 | 最终分数、等级判断、一票否决状态 |
+| 自动检测证据 | 出口 IP、DNS 路径、隧道/代理状态、目标可达性 |
+| 影响因素 | 为什么分数被拉低，但不展示详细权重表 |
+| 本轮未覆盖 | 因为需要人工配合或破坏性测试而跳过的项目 |
 
-## What It Checks
+## 它会自动检查
 
-- Public exit IP and consistency across multiple probes
-- DNS path evidence, including default and scoped macOS resolvers
-- IPv6 path evidence
-- macOS tunnel/proxy state
-- Public target reachability
-- Small-sample network response
-- Repeated-request stability
+- 公网出口 IP 和多个探针的一致性
+- DNS 路径证据，包括 macOS 的默认 resolver 和 scoped resolver
+- IPv6 路径证据
+- macOS 隧道接口和系统代理状态
+- 公开目标站点可达性
+- 小样本网络响应
+- 连续请求稳定性
 
-## What It Refuses To Do
+## 它不会做什么
 
-Some tests are useful but not zero-interaction. v1 leaves them out instead of turning the user into a test fixture.
+有些测试确实有价值，但不适合放进零交互流程。v1 宁可跳过，也不把用户变成测试员。
 
-- No kill-switch testing
-- No forced disconnects
-- No client trust review
-- No certificate/profile/kernel-extension inspection
-- No provider business-model judgment
-- No long-term peak-hour monitoring
-- No bank, campus, or login-only site probing
+- 不测试 kill switch
+- 不强制断开 VPN
+- 不做人肉客户端来源审查
+- 不检查证书、描述文件、内核扩展或 MDM
+- 不判断服务商商业模式
+- 不做长期高峰期监控
+- 不访问银行、校园网或其他登录类站点
 
-## Install
+## 安装
 
 ```bash
 mkdir -p "$HOME/.codex/skills"
 cp -R vpn-auditor "$HOME/.codex/skills/vpn-auditor"
 ```
 
-Restart Codex if the skill list does not refresh.
+如果 Codex 的 skill 列表没有刷新，重启 Codex。
 
-## Run
+## 使用
 
-Invoke `$vpn-auditor` after connecting your VPN/proxy, or run the script directly:
+连接好 VPN / 代理后，调用 `$vpn-auditor`。也可以直接运行脚本：
 
 ```bash
 python3 "$HOME/.codex/skills/vpn-auditor/scripts/vpn_auditor.py"
 ```
 
-Offline validation:
+离线自测：
 
 ```bash
 python3 "$HOME/.codex/skills/vpn-auditor/scripts/vpn_auditor.py" --self-test
 ```
 
-## Output Philosophy
+## 输出原则
 
-The report gives the final score and evidence, but it does not print the detailed weighting table. That keeps the report readable and makes the result harder to game. The project is still auditable: the implementation lives in `scripts/vpn_auditor.py`.
+报告会给出最终分数、结论和证据，但不会打印详细权重表。这样报告更易读，也不容易被刻意刷分。项目本身仍然可审计：实现逻辑在 `scripts/vpn_auditor.py`。
 
 ## License
 
