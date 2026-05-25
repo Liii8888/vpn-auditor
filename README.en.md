@@ -2,44 +2,48 @@
 
 [中文](README.md)
 
-Connect the tunnel. Run the skill. Read the verdict.
+**Connect the tunnel. Run the skill. Read the verdict.**
 
-`vpn-auditor` is a Codex skill for automatic VPN/proxy checks. It does not ask you to disconnect the VPN, switch networks, inspect the client, wait for peak hours, or manually confirm subjective details. It runs the checks it can prove by itself, then returns a concise Chinese report.
+`vpn-auditor` is a zero-interaction Codex skill for VPN/proxy checks. It only runs checks it can prove automatically, without asking you to disconnect the VPN, explain the client, wait for peak hours, or manually open websites.
 
 ```text
 结论：87/100。好，日常很稳，未命中一票否决。
 ```
 
-## What You Get
+| 01 | 02 | 03 |
+| --- | --- | --- |
+| Connect VPN / proxy | Invoke `$vpn-auditor` | Read the score, evidence, and impact factors |
 
-| Section | What it tells you |
+## Report Structure
+
+| Section | Purpose |
 | --- | --- |
 | Conclusion | Final score, verdict, and one-vote veto status |
+| Assessment Summary | Summarizes categories as strong, stable, limited, or weak |
 | Evidence | Exit IP, DNS path, tunnel/proxy state, and target reachability |
-| Impact Factors | Why the result was pulled down, without exposing the scoring weights |
-| Uncovered Items | Checks skipped because they require human action or disruptive testing |
+| Impact Factors | Explains what pulled the result down without exposing scoring weights |
+| Uncovered Items | Lists checks skipped because they require human action or disruptive testing |
 
-## What It Checks
+## Automatic Check Surface
 
-- Public exit IP and consistency across multiple probes
-- DNS path evidence, including default and scoped macOS resolvers
-- IPv6 path evidence
-- macOS tunnel/proxy state
-- Public target reachability
-- Small-sample network response
-- Repeated-request stability
+| Network Identity | Resolution Path | Connection Quality |
+| --- | --- | --- |
+| Public exit IP | Default DNS / scoped DNS | Public target reachability |
+| Multi-probe consistency | IPv6 path evidence | Small-sample network response |
+| macOS tunnel / system proxy | Local-network DNS signals | Repeated-request stability |
 
-## What It Refuses To Do
+## Boundaries
 
-Some tests are useful but not zero-interaction. v1 leaves them out instead of turning the user into a test fixture.
+The v1 rule is simple: test what can be proven automatically, and do not make the user part of the test rig.
 
-- No kill-switch testing
-- No forced disconnects
-- No client trust review
-- No certificate/profile/kernel-extension inspection
-- No provider business-model judgment
-- No long-term peak-hour monitoring
-- No bank, campus, or login-only site probing
+| Skipped | Reason |
+| --- | --- |
+| Kill switch / forced disconnect | It disrupts the current network state |
+| Client provenance review | It requires human judgment or extra permissions |
+| Certificates, profiles, kernel extensions, MDM | They do not fit a zero-interaction run |
+| Provider business-model judgment | It cannot be proven by one network check |
+| Long-term peak-hour stability | It requires multi-session monitoring |
+| Bank, campus, login-only sites | They can trigger risk controls or touch private data |
 
 ## Install
 
@@ -66,7 +70,7 @@ python3 "$HOME/.codex/skills/vpn-auditor/scripts/vpn_auditor.py" --self-test
 
 ## Output Philosophy
 
-The report gives the final score and evidence, but it does not print the detailed weighting table. That keeps the report readable and makes the result harder to game. The project is still auditable: the implementation lives in `scripts/vpn_auditor.py`.
+The report shows the final score, verdict, and evidence, but it does not print the detailed weighting table. That keeps the report readable and harder to game. The project is still auditable: the implementation lives in `scripts/vpn_auditor.py`.
 
 ## License
 
