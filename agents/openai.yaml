@@ -1,0 +1,4 @@
+interface:
+  display_name: "vpn-auditor"
+  short_description: "自动测试并评分 VPN/代理"
+  default_prompt: "Use $vpn-auditor to automatically test and score my connected VPN/proxy, then report the result in Chinese."
