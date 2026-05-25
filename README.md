@@ -1,33 +1,45 @@
 # vpn-auditor
 
-Codex skill for automatic VPN/proxy health checks.
+Connect the tunnel. Run the skill. Read the verdict.
 
-`vpn-auditor` scores a connected VPN/proxy without asking the user to disconnect, switch networks, inspect the client, wait for peak hours, or perform subjective checks. It produces a Chinese-by-default report with a score, dense 5-point conclusions above 60, one-vote veto status, evidence, deductions, and uncovered automatic-test items.
+`vpn-auditor` is a Codex skill for automatic VPN/proxy checks. It does not ask you to disconnect the VPN, inspect the client, wait for peak hours, or explain what you installed. It runs the checks it can prove by itself, then returns a concise Chinese report.
 
-## What It Tests
+```text
+结论：87/100。好，日常很稳，未命中一票否决。
+```
 
-- Public exit IP consistency
-- DNS configuration and likely leakage
+## What You Get
+
+| Section | What it tells you |
+| --- | --- |
+| Conclusion | Final score, verdict, and one-vote veto status |
+| Evidence | Exit IP, DNS path, tunnel/proxy state, target reachability |
+| Impact Factors | Why the result was pulled down, without exposing the scoring weights |
+| Uncovered Items | Checks skipped because they require human action or disruptive testing |
+
+## What It Checks
+
+- Public exit IP and consistency across multiple probes
+- DNS path evidence, including default and scoped macOS resolvers
 - IPv6 path evidence
-- Proxy/tunnel path evidence on macOS
+- macOS tunnel/proxy state
 - Public target reachability
-- Small-sample download and upload response
-- Basic stability through repeated requests
+- Small-sample network response
+- Repeated-request stability
 
-## What It Does Not Test
+## What It Refuses To Do
 
-The v1 skill intentionally skips items that require human cooperation or disruptive testing:
+Some tests are useful but not zero-interaction. v1 leaves them out instead of turning the user into a test fixture.
 
-- Kill switch / forced disconnect behavior
-- Client provenance
-- Certificates, profiles, kernel extensions, or MDM review
-- Business logic of the provider
-- Long-term peak-hour stability
-- Login-only sites such as banks or campus portals
+- No kill-switch testing
+- No forced disconnects
+- No client trust review
+- No certificate/profile/kernel-extension inspection
+- No provider business-model judgment
+- No long-term peak-hour monitoring
+- No bank, campus, or login-only site probing
 
 ## Install
-
-Copy this folder into the Codex skills directory:
 
 ```bash
 mkdir -p "$HOME/.codex/skills"
@@ -38,7 +50,7 @@ Restart Codex if the skill list does not refresh.
 
 ## Run
 
-After connecting your VPN/proxy, invoke the skill as `$vpn-auditor`, or run the script directly:
+Invoke `$vpn-auditor` after connecting your VPN/proxy, or run the script directly:
 
 ```bash
 python3 "$HOME/.codex/skills/vpn-auditor/scripts/vpn_auditor.py"
@@ -50,18 +62,9 @@ Offline validation:
 python3 "$HOME/.codex/skills/vpn-auditor/scripts/vpn_auditor.py" --self-test
 ```
 
-## Scoring
+## Output Philosophy
 
-- 95-100: 极好，主力长期用。
-- 90-94: 很好，可以长期主力用。
-- 85-89: 好，日常很稳。
-- 80-84: 良好，主力可用，但安全或体验还没到第一梯队。
-- 75-79: 可用，适合日常，但短板已经会影响部分场景。
-- 70-74: 勉强可用，不建议重要场景长期依赖。
-- 65-69: 凑合，安全、稳定或分流至少有一项明显问题。
-- 60-64: 低保可用，只适合临时过渡，不推荐主力。
-- 0-59: 不推荐，基本不值得作为常用梯子。
-- One-vote veto: 不安全，不看总分。
+The report gives the final score and evidence, but it does not print the detailed weighting table. That keeps the report readable and makes the result harder to game. The project is still auditable: the implementation lives in `scripts/vpn_auditor.py`.
 
 ## License
 

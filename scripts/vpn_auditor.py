@@ -683,20 +683,10 @@ def markdown_report(audit: dict[str, Any]) -> str:
         lines.append(f"- 公网出口：{geo_text or '未知'}")
     lines.append("")
 
-    category_order = ["安全与泄漏", "稳定与响应", "速度", "分流质量", "可维护性"]
-    lines.append("## 分项得分")
+    lines.append("## 评估摘要")
     lines.append("")
-    lines.append("| 项目 | 得分 | 说明 |")
-    lines.append("| --- | ---: | --- |")
-    for category in category_order:
-        items = [item for item in audit["score_items"] if item.category == category]
-        if not items:
-            continue
-        subtotal = sum(item.score for item in items)
-        max_total = sum(item.max_score for item in items)
-        lines.append(f"| {category} | {subtotal:.0f}/{max_total:.0f} |  |")
-        for item in items:
-            lines.append(f"| {item.name} | {item.score:.0f}/{item.max_score:.0f} | {item.note} |")
+    for category, label in category_summaries(audit["score_items"]):
+        lines.append(f"- {category}: {label}")
     lines.append("")
 
     lines.append("## 自动检测证据")
@@ -716,7 +706,7 @@ def markdown_report(audit: dict[str, Any]) -> str:
         lines.append(f"- {target.name}: {status} ({extra})")
     lines.append("")
 
-    lines.append("## 扣分说明")
+    lines.append("## 影响因素")
     lines.append("")
     deduction_lines = build_deduction_lines(audit["deductions"], audit["score_items"])
     if deduction_lines:
@@ -738,8 +728,29 @@ def build_deduction_lines(manual: list[str], score_items: list[ScoreItem]) -> li
     for item in score_items:
         missed = item.max_score - item.score
         if missed >= 1:
-            lines.append(f"{item.category}/{item.name} 扣 {missed:.0f} 分：{item.note}")
+            lines.append(f"{item.category}/{item.name}：{item.note}")
     return dedupe(lines)[:10]
+
+
+def category_summaries(score_items: list[ScoreItem]) -> list[tuple[str, str]]:
+    labels: list[tuple[str, str]] = []
+    for category in ["安全与泄漏", "稳定与响应", "速度", "分流质量", "可维护性"]:
+        items = [item for item in score_items if item.category == category]
+        if not items:
+            continue
+        subtotal = sum(item.score for item in items)
+        max_total = sum(item.max_score for item in items)
+        ratio = subtotal / max_total if max_total else 0
+        if ratio >= 0.9:
+            label = "强"
+        elif ratio >= 0.75:
+            label = "稳"
+        elif ratio >= 0.6:
+            label = "有短板"
+        else:
+            label = "偏弱"
+        labels.append((category, label))
+    return labels
 
 
 def self_test() -> int:
@@ -793,6 +804,9 @@ def self_test() -> int:
     report = markdown_report(fake)
     if "结论：87/100。好，日常很稳，未命中一票否决。" not in report:
         print("report conclusion format test failed", file=sys.stderr)
+        return 1
+    if "## 分项得分" in report or "扣 0" in report or "/12" in report:
+        print("hidden scoring report test failed", file=sys.stderr)
         return 1
     print("vpn-auditor self-test passed")
     return 0
